@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Marlee.Common.Deserialization.Tree
 {
-  internal class IntNode : MemberNode
+  internal class IntegerNode : MemberNode
   {
   }
 }

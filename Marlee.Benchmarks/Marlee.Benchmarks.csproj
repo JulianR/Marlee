@@ -2,18 +2,22 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{49BCCA59-EBF2-44C2-9E0D-22C4B9EF3D76}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{726E63D5-D675-4E5A-B24F-BA073483F425}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Marlee</RootNamespace>
-    <AssemblyName>Marlee</AssemblyName>
+    <RootNamespace>Marlee.Benchmarks</RootNamespace>
+    <AssemblyName>Marlee.Benchmarks</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,7 +26,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -31,9 +36,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\packages\ServiceStack.Text.3.6.9\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,31 +48,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Deserialization\DeserializeHandler.cs" />
-    <Compile Include="Common\Deserialization\DeserializerFactory.cs" />
-    <Compile Include="Common\Deserialization\Tree\DecimalNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\IntCollectionNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\KnownTypeNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\StringCollectionNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\UnknownTypeNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\IntegerNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\MemberNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\Node.cs" />
-    <Compile Include="Common\Deserialization\Tree\RootNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\StringNode.cs" />
-    <Compile Include="Common\Helpers\CollectionTypeHelper.cs" />
-    <Compile Include="Common\Helpers\Parsers.cs" />
-    <Compile Include="Common\PropertyOrFieldInfo.cs" />
-    <Compile Include="Jsv\Deserialization\CodeGenerator.cs" />
-    <Compile Include="Jsv\Deserialization\DeserializerTypeContext.cs" />
-    <Compile Include="Jsv\JsvConverter.cs" />
-    <Compile Include="Jsv\StandardFunctions.cs" />
+    <Compile Include="ParseDouble.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeSerializerTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Json\" />
+    <ProjectReference Include="..\Marlee\Marlee.csproj">
+      <Project>{49BCCA59-EBF2-44C2-9E0D-22C4B9EF3D76}</Project>
+      <Name>Marlee</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

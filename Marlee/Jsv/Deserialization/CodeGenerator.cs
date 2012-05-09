@@ -7,11 +7,23 @@ using System.Linq.Expressions;
 using Marlee.Common.Deserialization;
 using System.Reflection;
 using System.Reflection.Emit;
+using Marlee.Common.Helpers;
+using System.Collections;
 
 namespace Marlee.Jsv.Deserialization
 {
   class CodeGenerator
   {
+
+    private static readonly MethodInfo _extractStringCollection = typeof(StandardFunctions).GetMethod("ExtractStringCollection");
+    private static readonly MethodInfo _extractIntCollection = typeof(StandardFunctions).GetMethod("ExtractInt32Collection");
+    private static readonly MethodInfo _extractString = typeof(StandardFunctions).GetMethod("ExtractString");
+    private static readonly MethodInfo _extractInt32 = typeof(StandardFunctions).GetMethod("ExtractInt32");
+    private static readonly MethodInfo _extractInt64 = typeof(StandardFunctions).GetMethod("ExtractInt64");
+    private static readonly PropertyInfo _stringIndexMethod = typeof(string).GetProperties().FirstOrDefault(p => p.GetIndexParameters().Length == 1);
+    private static readonly MethodInfo _ignoreFunc = typeof(StandardFunctions).GetMethod("IgnoreChar");
+    private static readonly MethodInfo _subStringMethod = typeof(string).GetMethod("Substring", new[] { typeof(int), typeof(int) });
+    private static readonly MethodInfo _toArray = typeof(Enumerable).GetMethod("ToArray");
 
     public Delegate Generate(RootNode root)
     {
@@ -113,12 +125,6 @@ namespace Marlee.Jsv.Deserialization
       return lambda;
 
     }
-
-    private readonly PropertyInfo _stringIndexMethod = typeof(string).GetProperties().FirstOrDefault(p => p.GetIndexParameters().Length == 1);
-
-    private readonly MethodInfo _ignoreFunc = typeof(StandardFunctions).GetMethod("IgnoreChar");
-
-    private readonly MethodInfo _subStringMethod = typeof(string).GetMethod("Substring", new[] { typeof(int), typeof(int) });
 
     private Expression GetInnerLoopTemplate(DeserializerTypeContext ctx, Expression propertySwitch)
     {
@@ -231,25 +237,6 @@ namespace Marlee.Jsv.Deserialization
       return outerLoopBlock;
     }
 
-    private void X()
-    {
-      var i = 0;
-
-      var str = "sdfsdf";
-
-      while (i < str.Length)
-      {
-        if (StandardFunctions.IgnoreChar(str[i]))
-        {
-          continue;
-        }
-
-
-        i++;
-      }
-
-    }
-
     private Expression GetDefaultCase(DeserializerTypeContext ctx)
     {
       var skipMethod = typeof(StandardFunctions).GetMethod("Skip");
@@ -257,7 +244,6 @@ namespace Marlee.Jsv.Deserialization
       var callSkip = Expression.Call(null, skipMethod, ctx.IteratorVar, ctx.StringParam);
 
       return callSkip;
-
     }
 
     private Expression GetSwitchStatement(DeserializerTypeContext ctx, IList<Node> members)
@@ -265,7 +251,7 @@ namespace Marlee.Jsv.Deserialization
       var switchCases = new List<SwitchCase>();
       foreach (var c in members)
       {
-        var caseStatement = Emit(ctx, c as dynamic) as SwitchCase;
+        var caseStatement = ProcessNode(ctx, c as dynamic) as SwitchCase;
         switchCases.Add(caseStatement);
       }
 
@@ -278,7 +264,7 @@ namespace Marlee.Jsv.Deserialization
       return @switch;
     }
 
-    private SwitchCase Emit(DeserializerTypeContext ctx, UnknownTypeNode node)
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, UnknownTypeNode node)
     {
       ctx = new DeserializerTypeContext
       {
@@ -297,9 +283,7 @@ namespace Marlee.Jsv.Deserialization
 
     }
 
-    private readonly MethodInfo _extractString = typeof(StandardFunctions).GetMethod("ExtractString");
-
-    private SwitchCase Emit(DeserializerTypeContext ctx, StringNode node)
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, StringNode node)
     {
       var bodyExpressions = new List<Expression>();
 
@@ -321,9 +305,8 @@ namespace Marlee.Jsv.Deserialization
       return @case;
     }
 
-    private readonly MethodInfo _extractInt32 = typeof(StandardFunctions).GetMethod("ExtractInt32");
-
-    private SwitchCase Emit(DeserializerTypeContext ctx, IntNode node)
+   
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, IntegerNode node)
     {
       var bodyExpressions = new List<Expression>();
 
@@ -343,6 +326,55 @@ namespace Marlee.Jsv.Deserialization
       var @case = Expression.SwitchCase(body, Expression.Constant(node.Member.Name));
 
       return @case;
+    }
+
+    private Type GetNewCollectionType(Type memberType)
+    {
+      var typeInsideEnumerable = CollectionTypeHelper.GetTypeInsideEnumerable(memberType);
+
+      return typeof(List<>).MakeGenericType(typeInsideEnumerable);
+    }
+
+    private SwitchCase ProcessCollectionNode(DeserializerTypeContext ctx, MemberNode node, MethodInfo method)
+    {
+      var bodyExpressions = new List<Expression>();
+
+      var collectionType = GetNewCollectionType(node.Member.PropertyOrFieldType);
+
+      method = method.MakeGenericMethod(collectionType);
+
+      var createNewCollection = Expression.New(collectionType);
+
+      var callExtractItems = Expression.Call(null, method, ctx.IteratorVar, ctx.StringParam, createNewCollection);
+
+      var accessMember = Expression.MakeMemberAccess(ctx.InstanceVar, node.Member);
+
+      if (node.Member.PropertyOrFieldType.IsArray)
+      {
+        var callToArray = Expression.Call(null, _toArray.MakeGenericMethod(node.Member.PropertyOrFieldType.GetElementType()), callExtractItems);
+        callExtractItems = callToArray;
+      }
+
+      var assignMember = Expression.Assign(accessMember, callExtractItems);
+
+      bodyExpressions.Add(assignMember);
+      bodyExpressions.Add(Expression.Empty());
+
+      var body = Expression.Block(bodyExpressions);
+
+      var @case = Expression.SwitchCase(body, Expression.Constant(node.Member.Name));
+
+      return @case;
+    }
+
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, StringCollectionNode node)
+    {
+      return ProcessCollectionNode(ctx, node, _extractStringCollection);
+    }
+
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, IntCollectionNode node)
+    {
+      return ProcessCollectionNode(ctx, node, _extractIntCollection);
     }
 
     private static ModuleBuilder moduleBuilder;

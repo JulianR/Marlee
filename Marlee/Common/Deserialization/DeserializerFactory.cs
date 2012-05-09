@@ -6,6 +6,7 @@ using Marlee.Common.Deserialization.Tree;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Marlee.Jsv.Deserialization;
+using System.Collections.Concurrent;
 
 namespace Marlee.Common.Deserialization
 {
@@ -43,23 +44,29 @@ namespace Marlee.Common.Deserialization
       return nodes;
     }
 
-    private static readonly Dictionary<Type, Func<PropertyOrFieldInfo, Node>> _deserializers = new Dictionary<Type, Func<PropertyOrFieldInfo, Node>>();
+    private static readonly ConcurrentDictionary<Type, Func<PropertyOrFieldInfo, Node>> _deserializers = new ConcurrentDictionary<Type, Func<PropertyOrFieldInfo, Node>>();
 
     static DeserializerFactory()
     {
-      _deserializers.Add(typeof(int), p =>
-        new IntNode
-        {
-          Member = p
-        }
-      );
+      _deserializers[typeof(int)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(long)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(short)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(byte)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(uint)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(ulong)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(ushort)] = p => new IntegerNode { Member = p };
+      _deserializers[typeof(sbyte)] = p => new IntegerNode { Member = p };
 
-      _deserializers.Add(typeof(string), p =>
-        new StringNode
-        {
-          Member = p
-        }
-      );
+      _deserializers[typeof(double)] = p => new DecimalNode { Member = p };
+      _deserializers[typeof(float)] = p => new DecimalNode { Member = p };
+      _deserializers[typeof(decimal)] = p => new DecimalNode { Member = p };
+
+      _deserializers[typeof(string)] = p => new StringNode { Member = p };
+      _deserializers[typeof(ICollection<string>)] = p => new StringCollectionNode { Member = p };
+
+
+      _deserializers[typeof(ICollection<int>)] = p => new IntCollectionNode { Member = p };
+
     }
 
     private Node GetDeserializationNode(PropertyOrFieldInfo member)
@@ -73,6 +80,16 @@ namespace Marlee.Common.Deserialization
         if (key != null)
         {
           nodeFunc = _deserializers[key];
+        }
+        else
+        {
+          key = _deserializers.Keys.FirstOrDefault(k => member.PropertyOrFieldType.IsAssignableFrom(k));
+
+          if (key != null)
+          {
+            nodeFunc = _deserializers[key];
+          }
+
         }
 
       }
@@ -104,13 +121,6 @@ namespace Marlee.Common.Deserialization
       }
 
       return node;
-    }
-
-    private void ProcessMember(PropertyOrFieldInfo member)
-    {
-      var node = GetDeserializationNode(member);
-
-
     }
 
     private IList<PropertyOrFieldInfo> GetMembers(Type t)

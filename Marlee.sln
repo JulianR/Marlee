@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FA4BD3
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Marlee.Benchmarks", "Marlee.Benchmarks\Marlee.Benchmarks.csproj", "{726E63D5-D675-4E5A-B24F-BA073483F425}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Marlee.vsmdi
@@ -87,6 +89,16 @@ Global
 		{AEDC76B8-23B6-4AB8-802F-8F5708F6CB38}.Release|Mixed Platforms.Build.0 = Release|x86
 		{AEDC76B8-23B6-4AB8-802F-8F5708F6CB38}.Release|x86.ActiveCfg = Release|x86
 		{AEDC76B8-23B6-4AB8-802F-8F5708F6CB38}.Release|x86.Build.0 = Release|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Debug|x86.ActiveCfg = Debug|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Debug|x86.Build.0 = Debug|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Release|Any CPU.ActiveCfg = Release|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Release|Mixed Platforms.Build.0 = Release|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Release|x86.ActiveCfg = Release|x86
+		{726E63D5-D675-4E5A-B24F-BA073483F425}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

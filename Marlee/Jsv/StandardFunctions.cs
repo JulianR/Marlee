@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Marlee.Common.Helpers;
 
 namespace Marlee.Jsv
 {
@@ -12,47 +13,108 @@ namespace Marlee.Jsv
       return c < 33;
     }
 
-    private static ICollection<string> ExtractStringCollection(ref int i, string str, ICollection<string> collection)
+    public static T ExtractStringCollection<T>(ref int i, string str, T collection) where T : ICollection<string>
     {
       int start = -1;
 
       string subStr;
 
-      for (var j = i; j < str.Length; j++)
+      bool replace = false;
+
+      var end = -1;
+
+      int j;
+
+      for (j = i; j < str.Length; ++j)
       {
         char c = str[j];
 
-        if (c == '[') continue;
+        if (IgnoreChar(c)) continue;
 
-        if (char.IsWhiteSpace(c)) continue;
-
-        if (c == ',')
+        switch (c)
         {
-          subStr = str.Substring(start, j - start);
-          collection.Add(subStr);
-          start = j + 1;
+          case '[': 
+          case ',': continue;
+          case ']':
+            i = j;
+            return collection;
+          case '"':
+          
+            start = ++j;
+
+            for (; j < str.Length; ++j)
+            {
+              c = str[j];
+
+              if (c == '"')
+              {
+                if (str[j + 1] != '"') // end of string
+                {
+                  end = j;
+                  break;
+                }
+                else
+                {
+                  replace = true; // Replace double double quotes with single double quotes
+                  j++;
+                }
+              }
+            }
+
+            if (end < 0) throw new InvalidOperationException("String not properly terminated");
+
+            subStr = str.Substring(start, end - start);
+
+            if (replace)
+            {
+              subStr = subStr.Replace("\"\"", "\""); // Jsv double quotes in a string are escaped with double double quotes
+            }
+
+            collection.Add(subStr);
+            break;
+          default:
+            start = j;
+
+            for (; j < str.Length; ++j)
+            {
+              c = str[j];
+
+              if (c == ',' || c < 14) // < 14 == CR or LF)
+              {
+                end = j;
+
+                subStr = str.Substring(start, end - start);
+
+                collection.Add(subStr);
+
+                break;
+              }
+              else if(c == ']')
+              {
+                end = j;
+
+                subStr = str.Substring(start, end - start);
+
+                i = j;
+
+                collection.Add(subStr);
+
+                return collection;
+              }
+            }
+
+            if (end < 0) throw new InvalidOperationException("String not properly terminated");
+
+            break;
         }
-        else if (c == ']')
-        {
-          subStr = str.Substring(start, j - start);
-          collection.Add(subStr);
-
-          i = j;
-
-          return collection;
-        }
-
-        if (start < 0) start = j;
       }
 
       throw new InvalidOperationException();
     }
 
-    private static ICollection<int> ExtractInt32Collection(ref int i, string str, ICollection<int> collection)
+    public static T ExtractInt32Collection<T>(ref int i, string str, T collection) where T : ICollection<int>
     {
       int start = -1;
-
-      string subStr;
       int val;
 
       for (var j = i; j < str.Length; j++)
@@ -61,21 +123,27 @@ namespace Marlee.Jsv
 
         if (c == '[') continue;
 
-        if (char.IsWhiteSpace(c)) continue;
+        if (IgnoreChar(c)) continue;
 
         if (c == ',')
         {
-          subStr = str.Substring(start, j - start);
-          int.TryParse(subStr, out val);
+          if (Parsers.TryParseInt32FastStream(str, start, j, out val))
+          {
+            collection.Add(val);
+          }
 
-          collection.Add(val);
           start = j + 1;
         }
         else if (c == ']')
         {
-          subStr = str.Substring(start, j - start);
-          int.TryParse(subStr, out val);
-          collection.Add(val);
+          if (j - start > 0)
+          {
+            if (Parsers.TryParseInt32FastStream(str, start, j, out val))
+            {
+              collection.Add(val);
+            }
+          }
+
           i = j;
           return collection;
         }
@@ -103,16 +171,17 @@ namespace Marlee.Jsv
 
       if (end < 0) throw new InvalidOperationException();
 
-      var subStr = str.Substring(i, end - i);
-
       int val;
 
-      int.TryParse(subStr, out val);
+      //var subStr = str.Substring(i, end - i);
+
+      //int.TryParse(subStr, out val);
+
+      Parsers.TryParseInt32FastStream(str, i, end, out val);
 
       i = end - 1;
 
       return val;
-
     }
 
     public static string ExtractString(ref int i, string str)
@@ -246,7 +315,7 @@ namespace Marlee.Jsv
 
               if (startCharCount == endCharCount)
               {
-                start = i;
+                start = i - 1;
                 return;
               }
             }
@@ -265,6 +334,62 @@ namespace Marlee.Jsv
       }
 
       throw new InvalidOperationException();
+    }
+
+    public static double ExtractDouble(ref int i, string str)
+    {
+      var end = -1;
+
+      for (var j = i; j < str.Length; j++)
+      {
+        char c = str[j];
+
+        if (c == ',' || c == '}')
+        {
+          end = j;
+          break;
+        }
+      }
+
+      if (end < 0) throw new InvalidOperationException();
+
+      double val;
+
+      //var subStr = str.Substring(i, end - i);
+
+      //int.TryParse(subStr, out val);
+
+      Parsers.TryParseDoubleFastStream(str, i, end, out val);
+
+      i = end - 1;
+
+      return val;
+    }
+
+    public static decimal ExtractDecimal(ref int i, string str)
+    {
+      var end = -1;
+
+      for (var j = i; j < str.Length; j++)
+      {
+        char c = str[j];
+
+        if (c == ',' || c == '}')
+        {
+          end = j;
+          break;
+        }
+      }
+
+      if (end < 0) throw new InvalidOperationException();
+
+      decimal val;
+
+      Parsers.TryParseDecimalFastStream(str, i, end, out val);
+
+      i = end - 1;
+
+      return val;
     }
   }
 }

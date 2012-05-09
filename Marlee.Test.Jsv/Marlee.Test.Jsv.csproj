@@ -50,7 +50,15 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Deserialization\FastDecimalParseTests.cs" />
+    <Compile Include="Deserialization\FastDoubleParseTests.cs" />
+    <Compile Include="Deserialization\FastIntParseTests.cs" />
+    <Compile Include="Deserialization\IntCollectionTests.cs" />
+    <Compile Include="Deserialization\IntTests.cs" />
+    <Compile Include="Deserialization\SkipTests.cs" />
+    <Compile Include="Deserialization\StringCollectionTests.cs" />
     <Compile Include="Deserialization\StringTests.cs" />
+    <Compile Include="Deserialization\TemplateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
