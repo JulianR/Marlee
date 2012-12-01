@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Marlee.Common.Helpers;
+using Marlee.Common.Parsers;
 
 namespace Marlee.Test.Jsv.Deserialization
 {
@@ -20,7 +21,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1.0m, d);
     }
 
@@ -31,7 +32,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1.0m, d);
     }
 
@@ -42,7 +43,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1.5m, d);
     }
 
@@ -53,7 +54,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1.5m, d);
     }
 
@@ -64,7 +65,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1.505m, d);
     }
 
@@ -75,7 +76,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(1000.505m, d);
     }
 
@@ -86,7 +87,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(-1.505m, d);
     }
 
@@ -97,7 +98,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(-1.505m, d);
     }
 
@@ -109,7 +110,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       Decimal d;
 
-      Assert.IsTrue(Parsers.TryParseDecimalFastStream(s, 0, s.Length, out d));
+      Assert.IsTrue(DecimalParser.TryParseDecimalFastStream(s, 0, s.Length, out d));
       Assert.AreEqual(-1.505m, d);
     }
   }

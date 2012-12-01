@@ -20,6 +20,14 @@ namespace Marlee.Benchmarks
       public IList<string> Strings { get; set; }
 
       public int Bar { get; set; }
+
+      public int Bar1 { get; set; }
+
+      public int Bar2 { get; set; }
+
+      public string Bar3 { get; set; }
+
+      public string Bar4 { get; set; }
     }
 
     public static void BenchmarkSimple()
@@ -30,7 +38,11 @@ namespace Marlee.Benchmarks
         Bar = 100,
         Foo = "test",
         Strings = new[] { "test", "test1", "test2" },
-        Ints = new[] { 1, 2, 300, 5000, 3535, 22346, 11, 1543 }
+        Ints = new[] { 1, 2, 300, 5000, 3535, 22346, 11, 1543 },
+        Bar1 = 100,
+        Bar2 = 200,
+        Bar3 = "test",
+        Bar4 = "test1"
       };
 
       var str = TypeSerializer.SerializeToString(instance);
@@ -40,6 +52,8 @@ namespace Marlee.Benchmarks
       var jsv = new JsvConverter();
       result = null;
       result = jsv.DeserializeFromString<TestClass>(str);
+
+      Console.WriteLine(result);
 
       var sw = Stopwatch.StartNew();
 

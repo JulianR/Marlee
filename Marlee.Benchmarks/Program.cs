@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Marlee.Jsv;
 using Marlee.Common.Helpers;
+using Marlee.Common.Parsers;
 
 namespace Marlee.Benchmarks
 {
@@ -15,6 +16,9 @@ namespace Marlee.Benchmarks
       ParseDouble.Benchmark();
       Console.Clear();
       ParseDouble.Benchmark();
+      //SwitchTest.Benchmark();
+      //Console.Clear();
+      //SwitchTest.Benchmark();
       //TypeSerializerTests.BenchmarkSimple();
       //Console.Clear();
       //TypeSerializerTests.BenchmarkSimple();
@@ -114,18 +118,20 @@ namespace Marlee.Benchmarks
 
       for (var i = 0; i < 10000000; i++)
       {
-        Parsers.TryParseInt32Fast("1", out j);
-        Parsers.TryParseInt32Fast("2", out j);
-        Parsers.TryParseInt32Fast("3", out j);
-        Parsers.TryParseInt32Fast("4", out j);
-        Parsers.TryParseInt32Fast("50", out j);
-        Parsers.TryParseInt32Fast("1000", out j);
-        Parsers.TryParseInt32Fast("10000", out j);
+        Int32Parser.TryParseInt32Fast("1", out j);
+        Int32Parser.TryParseInt32Fast("2", out j);
+        Int32Parser.TryParseInt32Fast("3", out j);
+        Int32Parser.TryParseInt32Fast("4", out j);
+        Int32Parser.TryParseInt32Fast("50", out j);
+        Int32Parser.TryParseInt32Fast("1000", out j);
+        Int32Parser.TryParseInt32Fast("10000", out j);
       }
 
       sw.Stop();
 
       Console.WriteLine(sw.Elapsed);
+      Console.WriteLine("On average {0}ns per int", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
+
     }
 
     public static bool TryParseNormal(string s, out int i)

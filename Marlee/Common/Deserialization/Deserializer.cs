@@ -5,5 +5,8 @@ using System.Text;
 
 namespace Marlee.Common.Deserialization
 {
-  internal delegate T DeserializeHandler<T>(ref int start, string data);
+  internal class Deserializer
+  {
+    public Delegate Method { get; set; }
+  }
 }

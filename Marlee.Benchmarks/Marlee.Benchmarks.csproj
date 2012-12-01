@@ -51,6 +51,7 @@
     <Compile Include="ParseDouble.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwitchTest.cs" />
     <Compile Include="TypeSerializerTests.cs" />
   </ItemGroup>
   <ItemGroup>

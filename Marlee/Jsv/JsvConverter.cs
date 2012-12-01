@@ -3,27 +3,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Marlee.Common.Deserialization;
+using Marlee.Common;
 
 namespace Marlee.Jsv
 {
-  public class JsvConverter
+  public class JsvConverter : IConverter
   {
-    private Dictionary<Type, DeserializeHandler> _delegateCache = new Dictionary<Type, DeserializeHandler>();
+    private Dictionary<Type, Deserializer> _deserializerCache = new Dictionary<Type, Deserializer>();
 
-    private DeserializerFactory _factory = new DeserializerFactory();
+    private DeserializerFactory _factory;
+
+    public Guid Version { get; private set; }
+
+    public JsvConverter()
+    {
+      Version = Guid.NewGuid();
+
+      _factory = new DeserializerFactory(this);
+    }
 
     public T DeserializeFromString<T>(string data)
     {
-      DeserializeHandler del;
+      Deserializer deserializer;
 
-      if (!_delegateCache.TryGetValue(typeof(T), out del))
+      if (!_deserializerCache.TryGetValue(typeof(T), out deserializer))
       {
-        del = _factory.CreateDeserializer(typeof(T));
-        _delegateCache.Add(typeof(T), del);
+        deserializer = _factory.CreateDeserializer(typeof(T));
+
+        _deserializerCache.Add(typeof(T), deserializer);
       }
 
       int start = 0;
-      return (T)del(ref start, data);
+
+      return ((DeserializeHandler<T>)deserializer.Method)(ref start, data);
     }
   }
 }

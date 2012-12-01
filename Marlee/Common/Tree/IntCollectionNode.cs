@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Marlee.Common.Deserialization.Tree
+namespace Marlee.Common.Tree
 {
-  internal class StringCollectionNode : MemberNode
+  internal class IntCollectionNode : MemberNode
   {
   }
 }

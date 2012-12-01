@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Marlee.Jsv;
 using Marlee.Common.Helpers;
+using Marlee.Common.Parsers;
 
 namespace Marlee.Test.Jsv.Deserialization
 {
@@ -21,7 +22,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(1, i);
     }
@@ -33,7 +34,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(1000, i);
     }
@@ -45,7 +46,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(-1000, i);
     }
@@ -57,7 +58,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsFalse(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsFalse(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(0, i);
     }
@@ -69,9 +70,9 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsFalse(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
-      Assert.AreEqual(0, i);
+      Assert.AreEqual(1, i);
     }
 
     [TestMethod]
@@ -81,7 +82,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(-1, i);
     }
@@ -93,7 +94,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(-1, i);
     }
@@ -105,7 +106,32 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int i = 0;
 
-      Assert.IsTrue(Parsers.TryParseInt32Fast(s, out i));
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
+
+      Assert.AreEqual(-1, i);
+    }
+
+
+    [TestMethod]
+    public void IntParseTest_8()
+    {
+      var s = "1.45";
+
+      int i = 0;
+
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
+
+      Assert.AreEqual(1, i);
+    }
+
+    [TestMethod]
+    public void IntParseTest_9()
+    {
+      var s = "-1.95";
+
+      int i = 0;
+
+      Assert.IsTrue(Int32Parser.TryParseInt32Fast(s, out i));
 
       Assert.AreEqual(-1, i);
     }

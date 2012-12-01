@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Marlee.Common.Deserialization.Tree
+namespace Marlee.Jsv.Parsers
 {
-  internal class IntegerNode : MemberNode
+  internal static class DateTimeParser
   {
+
   }
 }

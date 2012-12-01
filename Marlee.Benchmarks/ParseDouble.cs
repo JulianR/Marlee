@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Marlee.Common.Helpers;
+using Marlee.Common.Parsers;
 
 namespace Marlee.Benchmarks
 {
@@ -34,19 +35,75 @@ namespace Marlee.Benchmarks
 
       for (var i = 0; i < 1000000; i++)
       {
-        Parsers.TryParseDoubleFastStream("1", 0, 1, out j);
-        Parsers.TryParseDoubleFastStream("2.0", 0, 3, out j);
-        Parsers.TryParseDoubleFastStream("3.5", 0, 3, out j);
-        Parsers.TryParseDoubleFastStream("-4.5", 0, 4, out j);
-        Parsers.TryParseDoubleFastStream("50.06", 0, 5, out j);
-        Parsers.TryParseDoubleFastStream("1000.65", 0, 7, out j);
-        Parsers.TryParseDoubleFastStream("-10000.8600", 0, 11, out j);
+        DoubleParser.TryParseDoubleFastStream("1", 0, 1, out j);
+        DoubleParser.TryParseDoubleFastStream("2.0", 0, 3, out j);
+        DoubleParser.TryParseDoubleFastStream("3.5", 0, 3, out j);
+        DoubleParser.TryParseDoubleFastStream("-4.5", 0, 4, out j);
+        DoubleParser.TryParseDoubleFastStream("50.06", 0, 5, out j);
+        DoubleParser.TryParseDoubleFastStream("1000.65", 0, 7, out j);
+        DoubleParser.TryParseDoubleFastStream("-10000.8600", 0, 11, out j);
       }
 
       sw.Stop();
 
       Console.WriteLine(sw.Elapsed);
+      Console.WriteLine("On average {0}ns per double", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 7000000.0));
     }
 
+    private static readonly long[] _powLookup = new[]
+    {
+      1, // 10^0
+      10, // 10^1
+      100, // 10^2
+      1000, // 10^3
+      10000, // 10^4
+      100000, // 10^5
+      1000000, // 10^6
+      10000000, // 10^7
+      100000000, // 10^8
+      1000000000, // 10^9,
+      10000000000, // 10^10,
+      100000000000, // 10^11,
+      1000000000000, // 10^12,
+      10000000000000, // 10^13,
+      100000000000000, // 10^14,
+      1000000000000000, // 10^15,
+      10000000000000000, // 10^16,
+      100000000000000000, // 10^17,
+    };
+
+    private static readonly double[] _doubleExpLookup = GetDoubleExponents();
+
+    private static double[] GetDoubleExponents()
+    {
+      var max = 309;
+
+      var exps = new double[max];
+
+      for (var i = 0; i < max; i++)
+      {
+        exps[i] = Math.Pow(10, i);
+      }
+
+      return exps;
+    }
+
+    // http://stackoverflow.com/a/101613/61632
+    private static long IntPow(int n, int exp)
+    {
+      long result = 1;
+
+      while (exp > 0)
+      {
+        if ((exp & 1) == 1)
+        {
+          result *= n;
+        }
+        exp >>= 1;
+        n *= n;
+      }
+
+      return result;
+    }
   }
 }

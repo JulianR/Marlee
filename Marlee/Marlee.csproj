@@ -42,28 +42,44 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Deserialization\DeserializeHandler.cs" />
+    <Compile Include="Common\Deserialization\Deserializer.cs" />
     <Compile Include="Common\Deserialization\DeserializerFactory.cs" />
-    <Compile Include="Common\Deserialization\Tree\DecimalNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\IntCollectionNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\KnownTypeNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\StringCollectionNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\UnknownTypeNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\IntegerNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\MemberNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\Node.cs" />
-    <Compile Include="Common\Deserialization\Tree\RootNode.cs" />
-    <Compile Include="Common\Deserialization\Tree\StringNode.cs" />
+    <Compile Include="Common\Deserialization\IKnownTypeProvider.cs" />
+    <Compile Include="Common\Deserialization\RecursionHelper.cs" />
+    <Compile Include="Common\Helpers\MemberHashHelper.cs" />
+    <Compile Include="Common\IConverter.cs" />
+    <Compile Include="Common\Parsers\DecimalParser.cs" />
+    <Compile Include="Common\Parsers\DoubleParser.cs" />
+    <Compile Include="Common\Parsers\Int32Parser.cs" />
+    <Compile Include="Common\Parsers\ParseLookups.cs" />
+    <Compile Include="Common\Serialization\SerializationFactory.cs" />
+    <Compile Include="Common\Serialization\SerializationHandler.cs" />
+    <Compile Include="Common\Serialization\Serializer.cs" />
+    <Compile Include="Common\Tree\DecimalNode.cs" />
+    <Compile Include="Common\Tree\IntCollectionNode.cs" />
+    <Compile Include="Common\Tree\KnownTypeNode.cs" />
+    <Compile Include="Common\Tree\RecursionNode.cs" />
+    <Compile Include="Common\Tree\StringCollectionNode.cs" />
+    <Compile Include="Common\Tree\TreeBuilder.cs" />
+    <Compile Include="Common\Tree\UnknownTypeNode.cs" />
+    <Compile Include="Common\Tree\IntegerNode.cs" />
+    <Compile Include="Common\Tree\MemberNode.cs" />
+    <Compile Include="Common\Tree\Node.cs" />
+    <Compile Include="Common\Tree\RootNode.cs" />
+    <Compile Include="Common\Tree\StringNode.cs" />
     <Compile Include="Common\Helpers\CollectionTypeHelper.cs" />
     <Compile Include="Common\Helpers\Parsers.cs" />
     <Compile Include="Common\PropertyOrFieldInfo.cs" />
-    <Compile Include="Jsv\Deserialization\CodeGenerator.cs" />
+    <Compile Include="Jsv\Deserialization\DeserializeCodeGenerator.cs" />
     <Compile Include="Jsv\Deserialization\DeserializerTypeContext.cs" />
     <Compile Include="Jsv\JsvConverter.cs" />
+    <Compile Include="Jsv\Parsers\DateTimeParser.cs" />
     <Compile Include="Jsv\StandardFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Json\" />
+    <Folder Include="Jsv\Serialization\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

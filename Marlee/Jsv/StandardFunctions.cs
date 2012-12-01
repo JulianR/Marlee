@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Marlee.Common.Helpers;
+using Marlee.Common.Parsers;
 
-namespace Marlee.Jsv
+namespace Marlee.Internal
 {
   public static class StandardFunctions
   {
@@ -127,7 +128,7 @@ namespace Marlee.Jsv
 
         if (c == ',')
         {
-          if (Parsers.TryParseInt32FastStream(str, start, j, out val))
+          if (Int32Parser.TryParseInt32FastStream(str, start, j, out val))
           {
             collection.Add(val);
           }
@@ -138,7 +139,7 @@ namespace Marlee.Jsv
         {
           if (j - start > 0)
           {
-            if (Parsers.TryParseInt32FastStream(str, start, j, out val))
+            if (Int32Parser.TryParseInt32FastStream(str, start, j, out val))
             {
               collection.Add(val);
             }
@@ -173,11 +174,7 @@ namespace Marlee.Jsv
 
       int val;
 
-      //var subStr = str.Substring(i, end - i);
-
-      //int.TryParse(subStr, out val);
-
-      Parsers.TryParseInt32FastStream(str, i, end, out val);
+      Int32Parser.TryParseInt32FastStream(str, i, end, out val);
 
       i = end - 1;
 
@@ -359,7 +356,7 @@ namespace Marlee.Jsv
 
       //int.TryParse(subStr, out val);
 
-      Parsers.TryParseDoubleFastStream(str, i, end, out val);
+      DoubleParser.TryParseDoubleFastStream(str, i, end, out val);
 
       i = end - 1;
 
@@ -385,7 +382,7 @@ namespace Marlee.Jsv
 
       decimal val;
 
-      Parsers.TryParseDecimalFastStream(str, i, end, out val);
+      DecimalParser.TryParseDecimalFastStream(str, i, end, out val);
 
       i = end - 1;
 

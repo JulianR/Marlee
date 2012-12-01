@@ -50,6 +50,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Deserialization\ComplexTests.cs" />
     <Compile Include="Deserialization\FastDecimalParseTests.cs" />
     <Compile Include="Deserialization\FastDoubleParseTests.cs" />
     <Compile Include="Deserialization\FastIntParseTests.cs" />

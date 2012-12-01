@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Marlee.Jsv;
 using ServiceStack.Text;
+using Marlee.Internal;
 
 namespace Marlee.Test.Jsv.Deserialization
 {

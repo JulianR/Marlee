@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Marlee.Common.Deserialization.Tree;
+using Marlee.Common.Tree;
 using System.Linq.Expressions;
 using Marlee.Common.Deserialization;
 using System.Reflection;
 using System.Reflection.Emit;
 using Marlee.Common.Helpers;
 using System.Collections;
+using Marlee.Internal;
 
 namespace Marlee.Jsv.Deserialization
 {
-  class CodeGenerator
+  internal class DeserializeCodeGenerator
   {
 
     private static readonly MethodInfo _extractStringCollection = typeof(StandardFunctions).GetMethod("ExtractStringCollection");
@@ -24,6 +25,18 @@ namespace Marlee.Jsv.Deserialization
     private static readonly MethodInfo _ignoreFunc = typeof(StandardFunctions).GetMethod("IgnoreChar");
     private static readonly MethodInfo _subStringMethod = typeof(string).GetMethod("Substring", new[] { typeof(int), typeof(int) });
     private static readonly MethodInfo _toArray = typeof(Enumerable).GetMethod("ToArray");
+    private static readonly MethodInfo _hashProperty = typeof(MemberHashHelper).GetMethod("Hash");
+
+
+    private static ModuleBuilder _moduleBuilder;
+    private static byte[] _syncRoot = new byte[0];
+
+    private TreeBuilder _treeBuilder;
+
+    public DeserializeCodeGenerator(TreeBuilder builder)
+    {
+      _treeBuilder = builder;
+    }
 
     public Delegate Generate(RootNode root)
     {
@@ -40,8 +53,11 @@ namespace Marlee.Jsv.Deserialization
 
       var lambda = GetTemplate(ctx);
 
-      return CompileExpression(root.Type, lambda);
+      var del = CompileExpression(root.Type, lambda);
 
+      _treeBuilder.AddKnownType(root.Type, del.Method);
+
+      return del;
     }
 
 
@@ -61,6 +77,8 @@ namespace Marlee.Jsv.Deserialization
       public LabelTarget ReturnLabel { get; set; }
       public ParameterExpression WhiteSpaceCounter { get; set; }
       public ParameterExpression SubStringVar { get; set; }
+      public Dictionary<int, string> HashValues { get; set; }
+      public ParameterExpression PropertyHashValue { get; set; }
     }
 
     private void InitializeVars(DeserializerTypeContext ctx)
@@ -115,10 +133,20 @@ namespace Marlee.Jsv.Deserialization
       bodyExpressions.Add(Expression.Label(ctx.ReturnLabel));
       bodyExpressions.Add(ctx.InstanceVar);
 
-      var body = Expression.Block(new[] { ctx.InstanceVar, ctx.EndVar, 
-        ctx.IteratorVar, ctx.StringLengthVar, ctx.CharVar, ctx.WhiteSpaceCounter, ctx.SubStringVar }, bodyExpressions);
+      var body = Expression.Block(new[] // the variables
+      { 
+        ctx.InstanceVar, 
+        ctx.EndVar, 
+        ctx.IteratorVar, 
+        ctx.StringLengthVar, 
+        ctx.CharVar, 
+        ctx.WhiteSpaceCounter,
+        ctx.PropertyHashValue ?? ctx.SubStringVar 
+      },
+        // the body
+      bodyExpressions);
 
-      var lambdaType = typeof(DeserializeHandler);
+      var lambdaType = typeof(DeserializeHandler<>).MakeGenericType(ctx.Type);
 
       var lambda = Expression.Lambda(lambdaType, body, ctx.StartParam, ctx.StringParam);
 
@@ -155,10 +183,22 @@ namespace Marlee.Jsv.Deserialization
         Expression.Throw(Expression.New(typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) })
         , Expression.Constant("Expected a property, but encountered none."))));
 
-      var callSubString = Expression.Call(ctx.StringParam, _subStringMethod, ctx.IteratorVar,
-        Expression.Subtract(Expression.Subtract(ctx.EndVar, ctx.IteratorVar), ctx.WhiteSpaceCounter));
+      Expression assignToSwitchValue;
 
-      var assignToSubStr = Expression.Assign(ctx.SubStringVar, callSubString);
+      if (ctx.HashValues == null)
+      {
+        var callSubString = Expression.Call(ctx.StringParam, _subStringMethod, ctx.IteratorVar,
+          Expression.Subtract(Expression.Subtract(ctx.EndVar, ctx.IteratorVar), ctx.WhiteSpaceCounter));
+
+        assignToSwitchValue = Expression.Assign(ctx.SubStringVar, callSubString);
+      }
+      else
+      {
+        var callHash = Expression.Call(null, _hashProperty, ctx.StringParam, ctx.IteratorVar,
+          Expression.Subtract(ctx.EndVar, ctx.WhiteSpaceCounter));
+
+        assignToSwitchValue = Expression.Assign(ctx.PropertyHashValue, callHash);
+      }
 
       var assignI = Expression.Assign(ctx.IteratorVar, Expression.Add(ctx.EndVar, Expression.Constant(1)));
 
@@ -171,8 +211,7 @@ namespace Marlee.Jsv.Deserialization
       bodyExpressions.Add(GetPropertyFinderLoop(ctx));
 
       bodyExpressions.Add(throwIfEndIsNegative);
-      bodyExpressions.Add(assignToSubStr);
-      //bodyExpressions.Add(Expression.Return(ctx.ReturnLabel, ctx.SubStringVar));
+      bodyExpressions.Add(assignToSwitchValue);
 
       bodyExpressions.Add(assignI);
       bodyExpressions.Add(propertySwitch);
@@ -249,10 +288,17 @@ namespace Marlee.Jsv.Deserialization
     private Expression GetSwitchStatement(DeserializerTypeContext ctx, IList<Node> members)
     {
       var switchCases = new List<SwitchCase>();
+
+      ctx.HashValues = MemberHashHelper.CanUseHashLookup(members.Cast<MemberNode>().Select(m => m.Member.Name));
+
       foreach (var c in members)
       {
         var caseStatement = ProcessNode(ctx, c as dynamic) as SwitchCase;
-        switchCases.Add(caseStatement);
+
+        if (caseStatement != null)
+        {
+          switchCases.Add(caseStatement);
+        }
       }
 
       if (!switchCases.Any())
@@ -260,13 +306,62 @@ namespace Marlee.Jsv.Deserialization
         return Expression.Empty();
       }
 
-      var @switch = Expression.Switch(ctx.SubStringVar, GetDefaultCase(ctx), switchCases.ToArray());
+      Expression switchValue;
+
+      if (ctx.HashValues == null)
+      {
+        switchValue = ctx.SubStringVar;
+      }
+      else
+      {
+        ctx.PropertyHashValue = Expression.Variable(typeof(int), "hashValue");
+
+        switchValue = ctx.PropertyHashValue;
+      }
+
+      var @switch = Expression.Switch(switchValue, GetDefaultCase(ctx), switchCases.ToArray());
       return @switch;
     }
 
-    private SwitchCase ProcessNode(DeserializerTypeContext ctx, UnknownTypeNode node)
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, KnownTypeNode node)
     {
-      ctx = new DeserializerTypeContext
+      return GetKnownTypeSwitchCase(ctx, node.Method, node);
+    }
+
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, RecursionNode node)
+    {
+      var method = typeof(RecursionHelper).GetMethod("GetDeserializer").MakeGenericMethod(node.Type);
+      
+      var del = method.Invoke(null, new[] {_treeBuilder}) as Delegate;
+
+      if (del == null) return null;
+
+      return GetKnownTypeSwitchCase(ctx, null, node, del);
+    }
+
+    private SwitchCase GetKnownTypeSwitchCase(DeserializerTypeContext ctx, MethodInfo method, MemberNode node, Delegate del = null)
+    {
+      var bodyExpressions = new List<Expression>();
+
+      var callExtractString = Expression.Call(null, method, ctx.IteratorVar, ctx.StringParam);
+
+      var accessMember = Expression.MakeMemberAccess(ctx.InstanceVar, node.Member);
+
+      var assignMember = Expression.Assign(accessMember, callExtractString);
+
+      bodyExpressions.Add(assignMember);
+      bodyExpressions.Add(Expression.Empty());
+
+      var body = Expression.Block(bodyExpressions);
+
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
+
+      return @case;
+    }
+
+    private SwitchCase ProcessNode(DeserializerTypeContext parentCtx, UnknownTypeNode node)
+    {
+      var ctx = new DeserializerTypeContext
       {
         Type = node.Member.PropertyOrFieldType
       };
@@ -279,8 +374,11 @@ namespace Marlee.Jsv.Deserialization
 
       var lambda = GetTemplate(ctx);
 
-      return Expression.SwitchCase(Expression.Empty());
+      var del = CompileExpression(node.Type, lambda);
 
+      _treeBuilder.AddKnownType(node.Type, del.Method);
+
+      return GetKnownTypeSwitchCase(parentCtx, del.Method, node);
     }
 
     private SwitchCase ProcessNode(DeserializerTypeContext ctx, StringNode node)
@@ -300,12 +398,12 @@ namespace Marlee.Jsv.Deserialization
 
       var body = Expression.Block(bodyExpressions);
 
-      var @case = Expression.SwitchCase(body, Expression.Constant(node.Member.Name));
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
 
       return @case;
     }
 
-   
+
     private SwitchCase ProcessNode(DeserializerTypeContext ctx, IntegerNode node)
     {
       var bodyExpressions = new List<Expression>();
@@ -323,9 +421,20 @@ namespace Marlee.Jsv.Deserialization
 
       var body = Expression.Block(bodyExpressions);
 
-      var @case = Expression.SwitchCase(body, Expression.Constant(node.Member.Name));
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
 
       return @case;
+    }
+
+    private Expression GetSwitchConstant(DeserializerTypeContext ctx, MemberNode node)
+    {
+      if (ctx.HashValues == null) return Expression.Constant(node.Member.Name);
+
+      var hash = ctx.HashValues.FirstOrDefault(kv => kv.Value == node.Member.Name);
+
+      if (hash.Value == null) throw new InvalidOperationException("Unknown hash for member " + node.Member);
+
+      return Expression.Constant(hash.Key);
     }
 
     private Type GetNewCollectionType(Type memberType)
@@ -362,7 +471,7 @@ namespace Marlee.Jsv.Deserialization
 
       var body = Expression.Block(bodyExpressions);
 
-      var @case = Expression.SwitchCase(body, Expression.Constant(node.Member.Name));
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
 
       return @case;
     }
@@ -377,30 +486,31 @@ namespace Marlee.Jsv.Deserialization
       return ProcessCollectionNode(ctx, node, _extractIntCollection);
     }
 
-    private static ModuleBuilder moduleBuilder;
-
-    private static byte[] syncRoot = new byte[0];
 
     private TypeBuilder DefineMappingType(string name)
     {
-      lock (syncRoot)
+      lock (_syncRoot)
       {
-        if (moduleBuilder == null)
+        if (_moduleBuilder == null)
         {
           var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Jsv_" + Guid.NewGuid().ToString("N")), AssemblyBuilderAccess.RunAndSave);
 
-          moduleBuilder = assemblyBuilder.DefineDynamicModule("Module");
+          _moduleBuilder = assemblyBuilder.DefineDynamicModule("Module");
         }
       }
-      var typeBuilder = moduleBuilder.DefineType(name, TypeAttributes.Public);
+      var typeBuilder = _moduleBuilder.DefineType(name, TypeAttributes.Public);
       return typeBuilder;
     }
 
     private Delegate CompileExpression(Type t, LambdaExpression expression)
     {
-      var typeBuilder = DefineMappingType(string.Format("Deserialize{0}{1}", t.Name, Guid.NewGuid().ToString("N")));
+      var typeBuilder = DefineMappingType(string.Format("Deserialize{0}_{1}", t.Name, Guid.NewGuid().ToString("N")));
 
-      var methodBuilder = typeBuilder.DefineMethod("Deserialize", MethodAttributes.Public | MethodAttributes.Static);
+      var methodBuilder = typeBuilder.DefineMethod(
+        "Deserialize",
+        MethodAttributes.Public | MethodAttributes.Static,
+        t,
+        expression.Parameters.Select(p => p.Type).ToArray());
 
       expression.CompileToMethod(methodBuilder);
 
