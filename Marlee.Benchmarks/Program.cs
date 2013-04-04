@@ -13,18 +13,18 @@ namespace Marlee.Benchmarks
   {
     static void Main(string[] args)
     {
-      ParseDouble.Benchmark();
+      //ParseDouble.Benchmark();
+      //Console.Clear();
+      //ParseDouble.Benchmark();
+      //SwitchTest.Benchmark();
+      //Console.Clear();
+      //SwitchTest.Benchmark();
+      //TypeSerializerTests.BenchmarkSimple();
+      //Console.Clear();
+      //TypeSerializerTests.BenchmarkSimple();
+      TestParse();
       Console.Clear();
-      ParseDouble.Benchmark();
-      //SwitchTest.Benchmark();
-      //Console.Clear();
-      //SwitchTest.Benchmark();
-      //TypeSerializerTests.BenchmarkSimple();
-      //Console.Clear();
-      //TypeSerializerTests.BenchmarkSimple();
-      //TestParse();
-      //Console.Clear();
-      //TestParse();
+      TestParse();
       //TestGeneric();
       //Console.Clear();
       //TestGeneric();
@@ -125,6 +125,24 @@ namespace Marlee.Benchmarks
         Int32Parser.TryParseInt32Fast("50", out j);
         Int32Parser.TryParseInt32Fast("1000", out j);
         Int32Parser.TryParseInt32Fast("10000", out j);
+      }
+
+      sw.Stop();
+
+      Console.WriteLine(sw.Elapsed);
+      Console.WriteLine("On average {0}ns per int", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
+
+      sw.Restart();
+
+      for (var i = 0; i < 10000000; i++)
+      {
+        Int32Parser.Parse("1", 0, out j);
+        Int32Parser.Parse("2", 0, out j);
+        Int32Parser.Parse("3", 0, out j);
+        Int32Parser.Parse("4", 0, out j);
+        Int32Parser.Parse("50", 0, out j);
+        Int32Parser.Parse("1000", 0, out j);
+        Int32Parser.Parse("10000", 0, out j);
       }
 
       sw.Stop();

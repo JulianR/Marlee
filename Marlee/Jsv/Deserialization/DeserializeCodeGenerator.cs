@@ -336,7 +336,7 @@ namespace Marlee.Jsv.Deserialization
 
       if (del == null) return null;
 
-      return GetKnownTypeSwitchCase(ctx, null, node, del);
+      return GetKnownTypeSwitchCase(ctx, del.Method, node, del);
     }
 
     private SwitchCase GetKnownTypeSwitchCase(DeserializerTypeContext ctx, MethodInfo method, MemberNode node, Delegate del = null)

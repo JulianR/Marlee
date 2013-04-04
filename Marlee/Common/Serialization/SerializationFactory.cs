@@ -22,28 +22,29 @@ namespace Marlee.Common.Serialization
 
     public SerializationHandler<T> CreateSerializer<T>(Type t)
     {
-      Serializer serializer;
+      //Serializer serializer;
 
-      var builder = new TreeBuilder(_converter);
+      //var builder = new TreeBuilder(_converter);
 
-      var generator = new SerializeCodeGenerator(builder);
+      //var generator = new SerializeCodeGenerator(builder);
 
-      var knownTypeDel = builder.TryGetKnownTypeDelegate(t);
+      //var knownTypeDel = builder.TryGetKnownTypeDelegate(t);
 
-      if (knownTypeDel == null)
-      {
-        var root = builder.CreateTree(t);
+      //if (knownTypeDel == null)
+      //{
+      //  var root = builder.CreateTree(t);
 
-        var del = generator.Generate(root);
+      //  var del = generator.Generate(root);
 
-        serializer = new Serializer { Method = del };
-      }
-      else
-      {
-        serializer = new Serializer { Method = knownTypeDel };
-      }
+      //  serializer = new Serializer { Method = del };
+      //}
+      //else
+      //{
+      //  serializer = new Serializer { Method = knownTypeDel };
+      //}
 
-      return serializer;
+      return null;
+      //return serializer;
     }
   }
 }

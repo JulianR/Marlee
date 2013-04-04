@@ -54,6 +54,7 @@
     <Compile Include="Deserialization\FastDecimalParseTests.cs" />
     <Compile Include="Deserialization\FastDoubleParseTests.cs" />
     <Compile Include="Deserialization\FastIntParseTests.cs" />
+    <Compile Include="Deserialization\Int32ParseTests.cs" />
     <Compile Include="Deserialization\IntCollectionTests.cs" />
     <Compile Include="Deserialization\IntTests.cs" />
     <Compile Include="Deserialization\SkipTests.cs" />
