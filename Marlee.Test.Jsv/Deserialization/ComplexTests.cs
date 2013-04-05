@@ -73,43 +73,43 @@ namespace Marlee.Test.Jsv.Deserialization
     }
 
 
-    private static Customer Create()
-    {
-      var customer = new Customer
+      private static Customer Create()
       {
-        Name = "Julian Rooze",
-        ID = 1,
-        FirstName = "Julian",
-        LastName = "Rooze",
-        Age = 24,
-        Roles = new List<string>
+        var customer = new Customer
         {
-          "test",
-          "test"
-        },
-        Address = new Address
-        {
+          Name = "Julian Rooze",
           ID = 1,
-          Street = "Street"
-        },
-        Parent = new Customer
-        {
-          Name = "Parent",
-          ID = 1,
+          FirstName = "Julian",
+          LastName = "Rooze",
+          Age = 24,
           Roles = new List<string>
           {
+            "test",
             "test"
           },
           Address = new Address
           {
             ID = 1,
-            Street = "Street 1"
+            Street = "Street"
+          },
+          Parent = new Customer
+          {
+            Name = "Parent",
+            ID = 1,
+            Roles = new List<string>
+            {
+              "test"
+            },
+            Address = new Address
+            {
+              ID = 1,
+              Street = "Street 1"
+            }
           }
-        }
-      };
+        };
 
-      return customer;
-    }
+        return customer;
+      }
 
     private void DoAsserts(Customer original, Customer deserialized)
     {

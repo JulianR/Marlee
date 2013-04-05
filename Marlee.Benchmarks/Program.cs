@@ -22,12 +22,15 @@ namespace Marlee.Benchmarks
       //TypeSerializerTests.BenchmarkSimple();
       //Console.Clear();
       //TypeSerializerTests.BenchmarkSimple();
-      TestParse();
-      Console.Clear();
-      TestParse();
+      //TestParse();
+      //Console.Clear();
+      //TestParse();
       //TestGeneric();
       //Console.Clear();
       //TestGeneric();
+      ComplexBenchmarks.Benchmark();
+      Console.Clear();
+      ComplexBenchmarks.Benchmark();
     }
 
     public static void TestGeneric()

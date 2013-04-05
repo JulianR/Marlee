@@ -5,26 +5,22 @@ using System.Text;
 using Marlee.Common.Tree;
 using Marlee.Common.Deserialization;
 using Marlee.Internal;
+using System.Collections.Concurrent;
 
 namespace Marlee.Internal
 {
   public class RecursionHelper
   {
-    public static Delegate GetDeserializer<T>(IKnownTypeProvider builder)
+    private static ConcurrentDictionary<Type, Delegate> _recursionLookup = new ConcurrentDictionary<Type, Delegate>();
+
+    public static DeserializeHandler<T> GetDeserializer<T>()
     {
-      var handler = new DeserializeHandler<T>((ref int i, string str) =>
-      {
-        var del = builder.TryGetKnownTypeDelegate(typeof(T));
+      return (DeserializeHandler<T>)_recursionLookup[typeof(T)];
+    }
 
-        if (del != null)
-        {
-          return ((DeserializeHandler<T>)del)(ref i, str);
-        }
-
-        return default(T);
-      });
-
-      return handler;
+    public static void SetDeserializer(Type t, Delegate del)
+    {
+      _recursionLookup[t] = del;
     }
   }
 }

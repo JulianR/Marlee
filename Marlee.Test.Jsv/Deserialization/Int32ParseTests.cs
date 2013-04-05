@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Marlee.Common.Parsers;
+using Marlee.Internal;
 
 namespace Marlee.Test.Jsv.Deserialization
 {
@@ -228,6 +229,33 @@ namespace Marlee.Test.Jsv.Deserialization
       int end;
       var val = Int32Parser.Parse(s, 0, out end);
       Assert.AreEqual(0, val);
+    }
+
+    [TestMethod]
+    public void Test_24()
+    {
+      var s = @"-1000\t\t";
+      int end;
+      var val = Int32Parser.Parse(s, 0, out end);
+      Assert.AreEqual(-1000, val);
+    }
+
+    [TestMethod, ExpectedException(typeof(InvalidOperationException))]
+    public void Test_25()
+    {
+      var s = @"test:x";
+      int i = 5;
+      var val = StandardFunctions.ExtractInt32(ref i, s);
+    }
+
+    [TestMethod]
+    public void Test_26()
+    {
+      var s = @"test:5";
+      int i = 5;
+      var val = StandardFunctions.ExtractInt32(ref i, s);
+      Assert.AreEqual(5, val);
+      Assert.AreEqual(s.Length - 2, i);
     }
   }
 }

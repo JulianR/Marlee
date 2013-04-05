@@ -157,26 +157,11 @@ namespace Marlee.Internal
 
     public static int ExtractInt32(ref int i, string str)
     {
-      var end = -1;
+      var val = Int32Parser.Parse(str, i, out i);
 
-      for (var j = i; j < str.Length; j++)
-      {
-        char c = str[j];
+      if (i < 0) throw new InvalidOperationException("Invalid Int32");
 
-        if (c == ',' || c == '}')
-        {
-          end = j;
-          break;
-        }
-      }
-
-      if (end < 0) throw new InvalidOperationException();
-
-      int val;
-
-      Int32Parser.TryParseInt32FastStream(str, i, end, out val);
-
-      i = end - 1;
+      --i;
 
       return val;
     }

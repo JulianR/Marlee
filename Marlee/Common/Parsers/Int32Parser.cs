@@ -44,7 +44,7 @@ namespace Marlee.Common.Parsers
           // Reached end of string
           if (start >= s.Length)
           {
-            endChar = start;
+            endChar = -1;
             return 0;
           }
 
@@ -60,8 +60,7 @@ namespace Marlee.Common.Parsers
         }
         else // It's not a number or whitespace, so give up.
         {
-          result = 0;
-          endChar = start;
+          endChar = -1;
           return 0;
         }
       }
@@ -103,7 +102,7 @@ namespace Marlee.Common.Parsers
 
             // Made it until the very end of the string without finding a comma, } or ], apparently
             endChar = s.Length - 1;
-            return result;
+            return result * sign;
           }
         }
         // If it's a normal number

@@ -68,7 +68,6 @@
     <Compile Include="Common\Tree\RootNode.cs" />
     <Compile Include="Common\Tree\StringNode.cs" />
     <Compile Include="Common\Helpers\CollectionTypeHelper.cs" />
-    <Compile Include="Common\Helpers\Parsers.cs" />
     <Compile Include="Common\PropertyOrFieldInfo.cs" />
     <Compile Include="Jsv\Deserialization\DeserializeCodeGenerator.cs" />
     <Compile Include="Jsv\Deserialization\DeserializerTypeContext.cs" />

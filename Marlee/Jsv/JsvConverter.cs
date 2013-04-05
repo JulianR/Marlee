@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Marlee.Common.Deserialization;
 using Marlee.Common;
+using Marlee.Internal;
 
 namespace Marlee.Jsv
 {

@@ -55,7 +55,7 @@ namespace Marlee.Jsv.Deserialization
 
       var del = CompileExpression(root.Type, lambda);
 
-      _treeBuilder.AddKnownType(root.Type, del.Method);
+      _treeBuilder.AddKnownType(root.Type, del);
 
       return del;
     }
@@ -331,15 +331,33 @@ namespace Marlee.Jsv.Deserialization
     private SwitchCase ProcessNode(DeserializerTypeContext ctx, RecursionNode node)
     {
       var method = typeof(RecursionHelper).GetMethod("GetDeserializer").MakeGenericMethod(node.Type);
-      
-      var del = method.Invoke(null, new[] {_treeBuilder}) as Delegate;
 
-      if (del == null) return null;
+      var invokeGetSerializer = Expression.Call(null, method);
 
-      return GetKnownTypeSwitchCase(ctx, del.Method, node, del);
+      var invokeReturnValue = Expression.Invoke(invokeGetSerializer, ctx.IteratorVar, ctx.StringParam);
+
+      var accessMember = Expression.MakeMemberAccess(ctx.InstanceVar, node.Member);
+
+      var assignMember = Expression.Assign(accessMember, invokeReturnValue);
+      var bodyExpressions = new List<Expression>();
+
+      bodyExpressions.Add(assignMember);
+      bodyExpressions.Add(Expression.Empty());
+
+      var body = Expression.Block(bodyExpressions);
+
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
+
+      return @case;
     }
 
-    private SwitchCase GetKnownTypeSwitchCase(DeserializerTypeContext ctx, MethodInfo method, MemberNode node, Delegate del = null)
+    private SwitchCase GetKnownTypeSwitchCaseForRecursion(DeserializerTypeContext ctx, RecursionNode node)
+    {
+      //var 
+      return null;
+    }
+
+    private SwitchCase GetKnownTypeSwitchCase(DeserializerTypeContext ctx, MethodInfo method, MemberNode node)
     {
       var bodyExpressions = new List<Expression>();
 
@@ -376,7 +394,7 @@ namespace Marlee.Jsv.Deserialization
 
       var del = CompileExpression(node.Type, lambda);
 
-      _treeBuilder.AddKnownType(node.Type, del.Method);
+      _treeBuilder.AddKnownType(node.Type, del);
 
       return GetKnownTypeSwitchCase(parentCtx, del.Method, node);
     }

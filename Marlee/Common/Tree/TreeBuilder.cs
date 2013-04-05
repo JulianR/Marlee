@@ -82,10 +82,12 @@ namespace Marlee.Common.Tree
       return null;
     }
 
-    internal void AddKnownType(Type t, MethodInfo method)
+    internal void AddKnownType(Type t, Delegate del)
     {
+      var method = del.Method;
       _deserializers[t] = (p) => new KnownTypeNode { Member = p, Type = t, Method = method };
       _knownTypes[t] = method;
+      RecursionHelper.SetDeserializer(t, del);
     }
 
     private Node GetDeserializationNode(PropertyOrFieldInfo member)
