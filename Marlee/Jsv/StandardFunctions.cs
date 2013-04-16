@@ -37,7 +37,7 @@ namespace Marlee.Internal
           case '[': 
           case ',': continue;
           case ']':
-            i = j;
+            i = j + 1;
             return collection;
           case '"':
           
@@ -80,7 +80,7 @@ namespace Marlee.Internal
             {
               c = str[j];
 
-              if (c == ',' || c < 14) // < 14 == CR or LF)
+              if (c == ',' || c < 14) // < 14 == CR or LF
               {
                 end = j;
 
@@ -96,7 +96,7 @@ namespace Marlee.Internal
 
                 subStr = str.Substring(start, end - start);
 
-                i = j;
+                i = j + 1;
 
                 collection.Add(subStr);
 
@@ -115,43 +115,36 @@ namespace Marlee.Internal
 
     public static T ExtractInt32Collection<T>(ref int i, string str, T collection) where T : ICollection<int>
     {
-      int start = -1;
       int val;
 
-      for (var j = i; j < str.Length; j++)
+      for (var j = i; j < str.Length; )
       {
         char c = str[j];
 
-        if (c == '[') continue;
-
-        if (IgnoreChar(c)) continue;
-
-        if (c == ',')
+        switch (c)
         {
-          if (Int32Parser.TryParseInt32FastStream(str, start, j, out val))
-          {
-            collection.Add(val);
-          }
-
-          start = j + 1;
-        }
-        else if (c == ']')
-        {
-          if (j - start > 0)
-          {
-            if (Int32Parser.TryParseInt32FastStream(str, start, j, out val))
-            {
-              collection.Add(val);
-            }
-          }
-
-          i = j;
-          return collection;
+          case '[':
+          case ',':
+            ++j;
+            continue;
+          case ']':
+            i = j + 1;
+            return collection;
         }
 
-        if (start < 0) start = j;
+        if (IgnoreChar(c))
+        {
+          ++j;
+          continue;
+        }
+
+        val = Int32Parser.Parse(str, j, out j);
+
+        if (j < 0) throw new InvalidOperationException();
+
+        collection.Add(val);
       }
-
+    
       throw new InvalidOperationException();
     }
 
@@ -160,8 +153,6 @@ namespace Marlee.Internal
       var val = Int32Parser.Parse(str, i, out i);
 
       if (i < 0) throw new InvalidOperationException("Invalid Int32");
-
-      --i;
 
       return val;
     }
@@ -191,7 +182,7 @@ namespace Marlee.Internal
             if (str[j + 1] != '"') // end of string
             {
               end = j;
-              i = end + 1;
+              i = end + 2;
               break;
             }
             else
@@ -224,7 +215,7 @@ namespace Marlee.Internal
           if (c == ',' || c == '}' || c < 14) // < 14 == CR or LF
           {
             end = j;
-            i = end - 1;
+            i = end;
             break;
           }
         }
@@ -297,7 +288,7 @@ namespace Marlee.Internal
 
               if (startCharCount == endCharCount)
               {
-                start = i - 1;
+                start = i;
                 return;
               }
             }
@@ -308,7 +299,7 @@ namespace Marlee.Internal
 
             if (startCharCount == endCharCount)
             {
-              start = i;
+              start = i + 1;
               return;
             }
           }
@@ -320,30 +311,9 @@ namespace Marlee.Internal
 
     public static double ExtractDouble(ref int i, string str)
     {
-      var end = -1;
+      var val = DoubleParser.Parse(str, i, out i);
 
-      for (var j = i; j < str.Length; j++)
-      {
-        char c = str[j];
-
-        if (c == ',' || c == '}')
-        {
-          end = j;
-          break;
-        }
-      }
-
-      if (end < 0) throw new InvalidOperationException();
-
-      double val;
-
-      //var subStr = str.Substring(i, end - i);
-
-      //int.TryParse(subStr, out val);
-
-      DoubleParser.TryParseDoubleFastStream(str, i, end, out val);
-
-      i = end - 1;
+      if (i < 0) throw new InvalidOperationException();
 
       return val;
     }
@@ -373,5 +343,39 @@ namespace Marlee.Internal
 
       return val;
     }
+
+    private static ICollection<T> ExtractGenericCollection<T>(ref int start, string str, ExtractCollectionItem<T> function, ICollection<T> collection) where T : new()
+    {
+      char c;
+
+      for (var i = start; i < str.Length; )
+      {
+        c = str[i];
+
+        if (c == '[')
+        {
+          ++i;
+          continue;
+        }
+
+        if (StandardFunctions.IgnoreChar(c))
+        {
+          ++i;
+          continue;
+        }
+
+        if (c == ']')
+        {
+          start = i + 1;
+          return collection;
+        }
+
+        var nr = function(ref i, str);
+
+        collection.Add(nr);
+      }
+
+      return null;
+    } 
   }
 }

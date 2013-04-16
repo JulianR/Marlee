@@ -16,7 +16,7 @@ namespace Marlee.Benchmarks
 
       double j;
 
-      for (var i = 0; i < 1000000; i++)
+      for (var i = 0; i < 10000000; i++)
       {
         double.TryParse("1", out j);
         double.TryParse("2.0", out j);
@@ -33,21 +33,22 @@ namespace Marlee.Benchmarks
 
       sw.Restart();
 
-      for (var i = 0; i < 1000000; i++)
+      int end = 0;
+      for (var i = 0; i < 10000000; i++)
       {
-        DoubleParser.TryParseDoubleFastStream("1", 0, 1, out j);
-        DoubleParser.TryParseDoubleFastStream("2.0", 0, 3, out j);
-        DoubleParser.TryParseDoubleFastStream("3.5", 0, 3, out j);
-        DoubleParser.TryParseDoubleFastStream("-4.5", 0, 4, out j);
-        DoubleParser.TryParseDoubleFastStream("50.06", 0, 5, out j);
-        DoubleParser.TryParseDoubleFastStream("1000.65", 0, 7, out j);
-        DoubleParser.TryParseDoubleFastStream("-10000.8600", 0, 11, out j);
+        DoubleParser.Parse("1", 0, out end);
+        DoubleParser.Parse("2.0", 0, out end);
+        DoubleParser.Parse("3.5", 0, out end);
+        DoubleParser.Parse("-4.5", 0, out end);
+        DoubleParser.Parse("50.06", 0, out end);
+        DoubleParser.Parse("1000.65", 0, out end);
+        DoubleParser.Parse("-10000.8600", 0, out end);
       }
 
       sw.Stop();
 
       Console.WriteLine(sw.Elapsed);
-      Console.WriteLine("On average {0}ns per double", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 7000000.0));
+      Console.WriteLine("On average {0}ns per double", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
     }
 
     private static readonly long[] _powLookup = new[]

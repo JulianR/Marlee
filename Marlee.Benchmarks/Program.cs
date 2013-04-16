@@ -14,7 +14,6 @@ namespace Marlee.Benchmarks
     static void Main(string[] args)
     {
       //ParseDouble.Benchmark();
-      //Console.Clear();
       //ParseDouble.Benchmark();
       //SwitchTest.Benchmark();
       //Console.Clear();
@@ -22,14 +21,12 @@ namespace Marlee.Benchmarks
       //TypeSerializerTests.BenchmarkSimple();
       //Console.Clear();
       //TypeSerializerTests.BenchmarkSimple();
-      //TestParse();
-      //Console.Clear();
-      //TestParse();
+      TestParse();
+      TestParse();
       //TestGeneric();
       //Console.Clear();
       //TestGeneric();
       ComplexBenchmarks.Benchmark();
-      Console.Clear();
       ComplexBenchmarks.Benchmark();
     }
 
@@ -121,24 +118,6 @@ namespace Marlee.Benchmarks
 
       for (var i = 0; i < 10000000; i++)
       {
-        Int32Parser.TryParseInt32Fast("1", out j);
-        Int32Parser.TryParseInt32Fast("2", out j);
-        Int32Parser.TryParseInt32Fast("3", out j);
-        Int32Parser.TryParseInt32Fast("4", out j);
-        Int32Parser.TryParseInt32Fast("50", out j);
-        Int32Parser.TryParseInt32Fast("1000", out j);
-        Int32Parser.TryParseInt32Fast("10000", out j);
-      }
-
-      sw.Stop();
-
-      Console.WriteLine(sw.Elapsed);
-      Console.WriteLine("On average {0}ns per int", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
-
-      sw.Restart();
-
-      for (var i = 0; i < 10000000; i++)
-      {
         Int32Parser.Parse("1", 0, out j);
         Int32Parser.Parse("2", 0, out j);
         Int32Parser.Parse("3", 0, out j);
@@ -146,6 +125,41 @@ namespace Marlee.Benchmarks
         Int32Parser.Parse("50", 0, out j);
         Int32Parser.Parse("1000", 0, out j);
         Int32Parser.Parse("10000", 0, out j);
+      }
+
+      sw.Stop();
+
+      Console.WriteLine(sw.Elapsed);
+      Console.WriteLine("On average {0}ns per int", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
+      
+      sw.Restart();
+
+      for (var i = 0; i < 10000000; i++)
+      {
+        Int32Parser.Parse("test:1,", 5, out j);
+        Int32Parser.Parse("test:2,", 5, out j);
+        Int32Parser.Parse("test:3,", 5, out j);
+        Int32Parser.Parse("test:4,", 5, out j);
+        Int32Parser.Parse("test:50,", 5, out j);
+        Int32Parser.Parse("test:1000,", 5, out j);
+        Int32Parser.Parse("test:10000,", 5, out j);
+      }
+
+      sw.Stop();
+
+      Console.WriteLine(sw.Elapsed);
+      Console.WriteLine("On average {0}ns per int", Math.Floor((sw.ElapsedMilliseconds * 1000000) / 70000000.0));
+      sw.Restart();
+
+      for (var i = 0; i < 10000000; i++)
+      {
+        int.Parse("test:1,".Substring(5, 1));
+        int.Parse("test:2,".Substring(5, 1));
+        int.Parse("test:3,".Substring(5, 1));
+        int.Parse("test:4,".Substring(5, 1));
+        int.Parse("test:50,".Substring(5, 2));
+        int.Parse("test:1000,".Substring(5, 4));
+        int.Parse("test:10000,".Substring(5, 5));
       }
 
       sw.Stop();

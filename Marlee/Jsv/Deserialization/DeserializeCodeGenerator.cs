@@ -21,12 +21,13 @@ namespace Marlee.Jsv.Deserialization
     private static readonly MethodInfo _extractString = typeof(StandardFunctions).GetMethod("ExtractString");
     private static readonly MethodInfo _extractInt32 = typeof(StandardFunctions).GetMethod("ExtractInt32");
     private static readonly MethodInfo _extractInt64 = typeof(StandardFunctions).GetMethod("ExtractInt64");
+    private static readonly MethodInfo _extractDouble = typeof(StandardFunctions).GetMethod("ExtractDouble");
+
     private static readonly PropertyInfo _stringIndexMethod = typeof(string).GetProperties().FirstOrDefault(p => p.GetIndexParameters().Length == 1);
     private static readonly MethodInfo _ignoreFunc = typeof(StandardFunctions).GetMethod("IgnoreChar");
     private static readonly MethodInfo _subStringMethod = typeof(string).GetMethod("Substring", new[] { typeof(int), typeof(int) });
     private static readonly MethodInfo _toArray = typeof(Enumerable).GetMethod("ToArray");
     private static readonly MethodInfo _hashProperty = typeof(MemberHashHelper).GetMethod("Hash");
-
 
     private static ModuleBuilder _moduleBuilder;
     private static byte[] _syncRoot = new byte[0];
@@ -77,7 +78,7 @@ namespace Marlee.Jsv.Deserialization
       public LabelTarget ReturnLabel { get; set; }
       public ParameterExpression WhiteSpaceCounter { get; set; }
       public ParameterExpression SubStringVar { get; set; }
-      public Dictionary<int, string> HashValues { get; set; }
+      public HashingMethod HashingMethod { get; set; }
       public ParameterExpression PropertyHashValue { get; set; }
     }
 
@@ -156,23 +157,21 @@ namespace Marlee.Jsv.Deserialization
 
     private Expression GetInnerLoopTemplate(DeserializerTypeContext ctx, Expression propertySwitch)
     {
-      Expression<Func<string, char>> x = (s) => s[1];
-
       var accessStringIndex = Expression.MakeIndex(ctx.StringParam, _stringIndexMethod, new[] { ctx.IteratorVar });
 
       var assignToChar = Expression.Assign(ctx.CharVar, accessStringIndex);
 
       var invokeIgnoreFunc = Expression.Call(null, _ignoreFunc, ctx.CharVar);
+      
+      var increment = Expression.PreIncrementAssign(ctx.IteratorVar);
 
-      var ifIgnore = Expression.IfThen(invokeIgnoreFunc, Expression.Continue(ctx.ContinueLabel));
-
-      var increment = Expression.PostIncrementAssign(ctx.IteratorVar);
+      var ifIgnore = Expression.IfThen(invokeIgnoreFunc, Expression.Block(increment, Expression.Continue(ctx.ContinueLabel)));
 
       var bodyExpressions = new List<Expression>();
 
-      var ifCommaOrBrace = Expression.SwitchCase(Expression.Continue(ctx.ContinueLabel), Expression.Constant(','), Expression.Constant('{'));
+      var ifCommaOrBrace = Expression.SwitchCase(Expression.Block(increment, Expression.Continue(ctx.ContinueLabel)), Expression.Constant(','), Expression.Constant('{'));
 
-      var ifClosingBrace = Expression.SwitchCase(Expression.Block(Expression.Assign(ctx.StartParam, ctx.IteratorVar), Expression.Return(ctx.ReturnLabel)), Expression.Constant('}'));
+      var ifClosingBrace = Expression.SwitchCase(Expression.Block(Expression.Assign(ctx.StartParam, increment), Expression.Return(ctx.ReturnLabel)), Expression.Constant('}'));
 
       var @switch = Expression.Switch(ctx.CharVar, ifCommaOrBrace, ifClosingBrace);
 
@@ -185,7 +184,7 @@ namespace Marlee.Jsv.Deserialization
 
       Expression assignToSwitchValue;
 
-      if (ctx.HashValues == null)
+      if (ctx.HashingMethod == null)
       {
         var callSubString = Expression.Call(ctx.StringParam, _subStringMethod, ctx.IteratorVar,
           Expression.Subtract(Expression.Subtract(ctx.EndVar, ctx.IteratorVar), ctx.WhiteSpaceCounter));
@@ -194,7 +193,7 @@ namespace Marlee.Jsv.Deserialization
       }
       else
       {
-        var callHash = Expression.Call(null, _hashProperty, ctx.StringParam, ctx.IteratorVar,
+        var callHash = Expression.Call(null, ctx.HashingMethod.Method.Method, ctx.StringParam, ctx.IteratorVar,
           Expression.Subtract(ctx.EndVar, ctx.WhiteSpaceCounter));
 
         assignToSwitchValue = Expression.Assign(ctx.PropertyHashValue, callHash);
@@ -217,8 +216,7 @@ namespace Marlee.Jsv.Deserialization
       bodyExpressions.Add(propertySwitch);
 
       bodyExpressions.Add(Expression.Label(ctx.ContinueLabel));
-      bodyExpressions.Add(increment);
-
+     
       return Expression.Block(bodyExpressions);
     }
 
@@ -289,7 +287,7 @@ namespace Marlee.Jsv.Deserialization
     {
       var switchCases = new List<SwitchCase>();
 
-      ctx.HashValues = MemberHashHelper.CanUseHashLookup(members.Cast<MemberNode>().Select(m => m.Member.Name));
+      ctx.HashingMethod = MemberHashHelper.CanUseHashLookup(members.Cast<MemberNode>().Select(m => m.Member.Name));
 
       foreach (var c in members)
       {
@@ -308,7 +306,7 @@ namespace Marlee.Jsv.Deserialization
 
       Expression switchValue;
 
-      if (ctx.HashValues == null)
+      if (ctx.HashingMethod == null)
       {
         switchValue = ctx.SubStringVar;
       }
@@ -444,11 +442,31 @@ namespace Marlee.Jsv.Deserialization
       return @case;
     }
 
+    private SwitchCase ProcessNode(DeserializerTypeContext ctx, DoubleNode node)
+    {
+      var bodyExpressions = new List<Expression>();
+
+      var callExtractInt = Expression.Call(null, _extractDouble, ctx.IteratorVar, ctx.StringParam);
+
+      var accessMember = Expression.MakeMemberAccess(ctx.InstanceVar, node.Member);
+
+      var assignMember = Expression.Assign(accessMember, callExtractInt);
+
+      bodyExpressions.Add(assignMember);
+      bodyExpressions.Add(Expression.Empty());
+
+      var body = Expression.Block(bodyExpressions);
+
+      var @case = Expression.SwitchCase(body, GetSwitchConstant(ctx, node));
+
+      return @case;
+    }
+
     private Expression GetSwitchConstant(DeserializerTypeContext ctx, MemberNode node)
     {
-      if (ctx.HashValues == null) return Expression.Constant(node.Member.Name);
+      if (ctx.HashingMethod == null) return Expression.Constant(node.Member.Name);
 
-      var hash = ctx.HashValues.FirstOrDefault(kv => kv.Value == node.Member.Name);
+      var hash = ctx.HashingMethod.Values.FirstOrDefault(kv => kv.Value == node.Member.Name);
 
       if (hash.Value == null) throw new InvalidOperationException("Unknown hash for member " + node.Member);
 

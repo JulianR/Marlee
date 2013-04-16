@@ -255,7 +255,7 @@ namespace Marlee.Test.Jsv.Deserialization
       int i = 5;
       var val = StandardFunctions.ExtractInt32(ref i, s);
       Assert.AreEqual(5, val);
-      Assert.AreEqual(s.Length - 2, i);
+      Assert.AreEqual(s.Length, i);
     }
   }
 }

@@ -32,7 +32,9 @@ namespace Marlee.Test.Jsv.Deserialization
         Address = new Address
         {
           ID = 1,
-          Street = "Street"
+          Street = "Street",
+          Longitude = 5.21788000,
+          Latitude = 52.36897000
         },
         PhoneNumbers = new List<PhoneNumber>
         {
@@ -74,6 +76,8 @@ namespace Marlee.Test.Jsv.Deserialization
       {
         Assert.AreEqual(original.Address.Street, deserialized.Address.Street);
         Assert.AreEqual(original.Address.ID, deserialized.Address.ID);
+        Assert.AreEqual(original.Address.Latitude, deserialized.Address.Latitude);
+        Assert.AreEqual(original.Address.Longitude, deserialized.Address.Longitude);
       }
 
       if (original.PhoneNumbers != null)
@@ -145,6 +149,8 @@ namespace Marlee.Test.Jsv.Deserialization
     {
       public string Street { get; set; }
       public int ID { get; set; }
+      public double Longitude { get; set; }
+      public double Latitude { get; set; }
     }
 
     private static Customer ExtractCustomer(ref int start, string str)
@@ -153,12 +159,13 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int end;
 
-      for (var i = start; i < str.Length; i++)
+      for (var i = start; i < str.Length;)
       {
         var c = str[i];
 
         if (StandardFunctions.IgnoreChar(c))
         {
+          ++i;
           continue;
         }
 
@@ -166,9 +173,10 @@ namespace Marlee.Test.Jsv.Deserialization
         {
           case ',':
           case '{':
+            ++i;
             continue;
           case '}':
-            start = i;
+            start = ++i;
             return newCustomer;
         }
 
@@ -240,17 +248,25 @@ namespace Marlee.Test.Jsv.Deserialization
     {
       char c;
 
-      for (var i = start; i < str.Length; i++)
+      for (var i = start; i < str.Length;)
       {
         c = str[i];
 
-        if (c == '[') continue;
+        if (c == '[')
+        {
+          ++i;
+          continue;
+        }
 
-        if (StandardFunctions.IgnoreChar(c)) continue;
+        if (StandardFunctions.IgnoreChar(c))
+        {
+          ++i;
+          continue;
+        }
 
         if (c == ']')
         {
-          start = i;
+          start = i + 1;
           return instance;
         }
 
@@ -292,10 +308,10 @@ namespace Marlee.Test.Jsv.Deserialization
       switch (subStr)
       {
         case "Mobile":
-          start = end - sub;
+          start = 1 + end - sub;
           return PhoneNumberTypes.Mobile;
         case "Land":
-          start = end - sub;
+          start = 1 + end - sub;
           return PhoneNumberTypes.Land;
         default:
           return default(PhoneNumberTypes);
@@ -308,7 +324,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int end;
 
-      for (var i = start; i < str.Length; i++)
+      for (var i = start; i < str.Length;)
       {
         var c = str[i];
 
@@ -318,9 +334,10 @@ namespace Marlee.Test.Jsv.Deserialization
         {
           case ',':
           case '{':
+            ++i;
             continue;
           case '}':
-            start = i;
+            start = ++i;
             return number;
         }
 
@@ -371,7 +388,7 @@ namespace Marlee.Test.Jsv.Deserialization
 
       int end;
 
-      for (var i = start; i < str.Length; i++)
+      for (var i = start; i < str.Length;)
       {
         var c = str[i];
 
@@ -381,9 +398,10 @@ namespace Marlee.Test.Jsv.Deserialization
         {
           case ',':
           case '{':
+            ++i;
             continue;
           case '}':
-            start = i;
+            start = ++i;
             return address;
         }
 
@@ -418,6 +436,12 @@ namespace Marlee.Test.Jsv.Deserialization
             break;
           case "ID":
             address.ID = StandardFunctions.ExtractInt32(ref i, str);
+            break;
+          case "Longitude":
+            address.Longitude = StandardFunctions.ExtractDouble(ref i, str);
+            break;
+          case "Latitude":
+            address.Latitude = StandardFunctions.ExtractDouble(ref i, str);
             break;
           default:
             StandardFunctions.Skip(ref i, str);

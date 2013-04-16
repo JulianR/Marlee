@@ -6,16 +6,16 @@ using Marlee.Internal;
 
 namespace Marlee.Common.Parsers
 {
-  public static class Int32Parser
+  public static class Int64Parser
   {
     /// <summary>
-    /// Parses an int from a JSON/JSV string starting at the given position within the string.
+    /// Parses a long from a JSON/JSV string starting at the given position within the string.
     /// It does so without having to create a substring.
     /// </summary>
     /// <returns></returns>
-    public static int Parse(string s, int start, out int endChar)
+    public static long Parse(string s, int start, out int endChar)
     {
-      int result = 0;
+      long result = 0;
       char c = s[start];
       int sign = 1;
       var len = s.Length;

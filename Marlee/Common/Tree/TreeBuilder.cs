@@ -36,7 +36,11 @@ namespace Marlee.Common.Tree
       foreach (var member in members)
       {
         var node = GetDeserializationNode(member);
-        nodes.Add(node);
+
+        if (node != null)
+        {
+          nodes.Add(node);
+        }
       }
 
       return nodes;
@@ -56,8 +60,8 @@ namespace Marlee.Common.Tree
       _deserializers[typeof(ulong)] = p => new IntegerNode { Member = p };
       _deserializers[typeof(ushort)] = p => new IntegerNode { Member = p };
       _deserializers[typeof(sbyte)] = p => new IntegerNode { Member = p };
-      _deserializers[typeof(double)] = p => new DecimalNode { Member = p };
-      _deserializers[typeof(float)] = p => new DecimalNode { Member = p };
+      _deserializers[typeof(double)] = p => new DoubleNode { Member = p };
+      _deserializers[typeof(float)] = p => new FloatNode { Member = p };
       _deserializers[typeof(decimal)] = p => new DecimalNode { Member = p };
       _deserializers[typeof(string)] = p => new StringNode { Member = p };
       _deserializers[typeof(ICollection<string>)] = p => new StringCollectionNode { Member = p };

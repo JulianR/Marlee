@@ -78,11 +78,11 @@ namespace Marlee.Test.Jsv.Deserialization
 
       var result = jsv.DeserializeFromString<TestClass>(str);
 
-      Assert.IsTrue(result.Ints.SequenceEqual(new[] { 1, 3 }));
+      Assert.IsTrue(result.Ints.SequenceEqual(new[] { 1, 2, 3 }));
       Assert.AreEqual("test3", result.Foo);
     }
 
-    [TestMethod]
+    [TestMethod, ExpectedException(typeof(InvalidOperationException))]
     public void IntCollectionIsDeserialized_5()
     {
       var str = "{Ints:[1, 2, 3, aaa ],Foo:test3}";
@@ -90,9 +90,6 @@ namespace Marlee.Test.Jsv.Deserialization
       var jsv = new JsvConverter();
 
       var result = jsv.DeserializeFromString<TestClass>(str);
-
-      Assert.IsTrue(result.Ints.SequenceEqual(new[] { 1, 2, 3 }));
-      Assert.AreEqual("test3", result.Foo);
     }
 
     [TestMethod]

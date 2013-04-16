@@ -41,13 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Deserialization\DeserializeHandler.cs" />
+    <Compile Include="Common\Deserialization\Delegates.cs" />
     <Compile Include="Common\Deserialization\Deserializer.cs" />
     <Compile Include="Common\Deserialization\DeserializerFactory.cs" />
     <Compile Include="Common\Deserialization\IKnownTypeProvider.cs" />
     <Compile Include="Common\Deserialization\RecursionHelper.cs" />
     <Compile Include="Common\Helpers\MemberHashHelper.cs" />
     <Compile Include="Common\IConverter.cs" />
+    <Compile Include="Common\Parsers\Int64Parser.cs" />
     <Compile Include="Common\Parsers\DecimalParser.cs" />
     <Compile Include="Common\Parsers\DoubleParser.cs" />
     <Compile Include="Common\Parsers\Int32Parser.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Common\Serialization\SerializationFactory.cs" />
     <Compile Include="Common\Serialization\SerializationHandler.cs" />
     <Compile Include="Common\Serialization\Serializer.cs" />
+    <Compile Include="Common\Tree\DoubleNode.cs" />
     <Compile Include="Common\Tree\DecimalNode.cs" />
     <Compile Include="Common\Tree\IntCollectionNode.cs" />
     <Compile Include="Common\Tree\KnownTypeNode.cs" />

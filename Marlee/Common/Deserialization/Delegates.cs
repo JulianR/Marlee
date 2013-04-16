@@ -6,4 +6,5 @@ using System.Text;
 namespace Marlee.Internal
 {
   public delegate T DeserializeHandler<T>(ref int start, string data);
+  public delegate T ExtractCollectionItem<T>(ref int i, string s);
 }
