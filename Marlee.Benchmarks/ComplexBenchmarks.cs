@@ -8,7 +8,6 @@ using System.Diagnostics;
 
 namespace Marlee.Benchmarks
 {
-
   [Serializable]
   public class Customer
   {
@@ -31,7 +30,6 @@ namespace Marlee.Benchmarks
     public double Latitude { get; set; }
     public double Longitude { get; set; }
   }
-
 
   public static class ComplexBenchmarks
   {
@@ -58,8 +56,8 @@ namespace Marlee.Benchmarks
         {
           ID = 1,
           Street = "Street",
-          //Longitude = 5.21788000,
-          //Latitude = 52.36897000
+          Longitude = 5.21788000,
+          Latitude = 52.36897000
         },
         Parent = new Customer
         {
@@ -96,6 +94,7 @@ namespace Marlee.Benchmarks
 
       var sw = Stopwatch.StartNew();
 
+      // Servicestack.Text
       for (var i = 0; i < 1000000; i++)
       {
         result = TypeSerializer.DeserializeFromString<Customer>(str);
@@ -107,6 +106,7 @@ namespace Marlee.Benchmarks
 
       sw.Restart();
 
+      // Marlee.Jsv
       for (var i = 0; i < 1000000; i++)
       {
         result = jsv.DeserializeFromString<Customer>(str);
