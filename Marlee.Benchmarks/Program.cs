@@ -6,6 +6,8 @@ using System.Diagnostics;
 using Marlee.Jsv;
 using Marlee.Common.Helpers;
 using Marlee.Common.Parsers;
+using Marlee.Jsv.Deserialization;
+using Marlee.Internal;
 
 namespace Marlee.Benchmarks
 {
@@ -21,13 +23,16 @@ namespace Marlee.Benchmarks
       //TypeSerializerTests.BenchmarkSimple();
       //Console.Clear();
       //TypeSerializerTests.BenchmarkSimple();
-      TestParse();
-      TestParse();
+      //TestParse();
+      //TestParse();
       //TestGeneric();
       //Console.Clear();
       //TestGeneric();
       ComplexBenchmarks.Benchmark();
       ComplexBenchmarks.Benchmark();
+
+
+
     }
 
     public static void TestGeneric()
