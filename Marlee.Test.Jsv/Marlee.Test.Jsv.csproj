@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Deserialization\ComplexTests.cs" />
+    <Compile Include="Deserialization\DateTimeTests.cs" />
     <Compile Include="Deserialization\DoubleParseTests.cs" />
     <Compile Include="Deserialization\FastDecimalParseTests.cs" />
     <Compile Include="Deserialization\Int32ParseTests.cs" />
