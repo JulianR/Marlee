@@ -328,11 +328,10 @@ namespace Marlee.Jsv.Deserialization
 
     private SwitchCase ProcessNode(DeserializerTypeContext ctx, RecursionNode node)
     {
-      var method = typeof(RecursionHelper).GetMethod("GetDeserializer").MakeGenericMethod(node.Type);
+      var accessFunction = Expression.MakeMemberAccess(null, typeof(DeserializerStore<>)
+        .MakeGenericType(node.Type).GetField("Function"));
 
-      var invokeGetSerializer = Expression.Call(null, method);
-
-      var invokeReturnValue = Expression.Invoke(invokeGetSerializer, ctx.IteratorVar, ctx.StringParam);
+      var invokeReturnValue = Expression.Invoke(accessFunction, ctx.IteratorVar, ctx.StringParam);
 
       var accessMember = Expression.MakeMemberAccess(ctx.InstanceVar, node.Member);
 
