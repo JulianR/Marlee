@@ -72,6 +72,7 @@
     <Compile Include="Common\Helpers\CollectionTypeHelper.cs" />
     <Compile Include="Common\PropertyOrFieldInfo.cs" />
     <Compile Include="Jsv\Deserialization\DeserializeCodeGenerator.cs" />
+    <Compile Include="Jsv\Deserialization\DeserializerStore.cs" />
     <Compile Include="Jsv\Deserialization\DeserializerTypeContext.cs" />
     <Compile Include="Jsv\JsvConverter.cs" />
     <Compile Include="Jsv\Parsers\DateTimeParser.cs" />
