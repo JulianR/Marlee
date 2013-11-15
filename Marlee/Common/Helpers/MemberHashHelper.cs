@@ -29,6 +29,10 @@ namespace Marlee.Internal
       {
         return method;
       }
+      else if (CanUseMethod(HashThree, members, out method))
+      {
+        return method;
+      }
 
       return null;
     }
@@ -67,6 +71,12 @@ namespace Marlee.Internal
     }
 
     public static int HashTwo(string s, int start, int end)
+    {
+      return (s[start + 1] * 31) + (s[end - 2] * 31);
+    }
+
+
+    public static int HashThree(string s, int start, int end)
     {
       return (s[start + 1] * 31) + (s[end - 2] * 31);
     }
